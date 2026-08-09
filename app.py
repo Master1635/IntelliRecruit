@@ -272,16 +272,27 @@ def update_candidate(
             supabase
             .table("candidates")
             .update({
-                "name": name,
-                "experience": experience,
-                "skills": skills,
-                "summary": summary
+                "name": name.strip(),
+                "experience": int(experience),
+                "skills": skills.strip(),
+                "summary": summary.strip()
             })
             .eq("id", candidate_id)
             .execute()
         )
 
-        return response
+        if response.data:
+
+            return response
+
+        else:
+
+            st.error(
+                "Profile update was not completed. "
+                "No candidate record was updated."
+            )
+
+            return None
 
     except Exception as e:
 
@@ -290,37 +301,6 @@ def update_candidate(
         )
 
         return None
-def save_application(
-    candidate_id,
-    job_id,
-    atr,
-    status
-):
-
-    try:
-
-        response = (
-            supabase
-            .table("applications")
-            .insert({
-                "candidate_id": candidate_id,
-                "job_id": job_id,
-                "atr_score": atr,
-                "status": status
-            })
-            .execute()
-        )
-
-        return response
-
-    except Exception as e:
-
-        st.error(
-            f"Unable to submit application: {str(e)}"
-        )
-
-        return None
-
 def schedule_interview(
     application_id,
     interview_date,
