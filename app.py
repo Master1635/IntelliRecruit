@@ -396,7 +396,9 @@ def get_eligible_applications_for_hr():
         supabase
         .table("applications")
         .select(
-            "*, candidates(name,email), jobs(title,company)"
+            "id, candidate_id, job_id, atr_score, status, "
+            "candidates(id, name, email, experience, skills, summary), "
+            "jobs(id, title, company, hr_email)"
         )
         .eq("status", "Eligible")
         .execute()
@@ -410,19 +412,62 @@ def get_eligible_applications_for_hr():
         job = app.get("jobs") or {}
 
         eligible.append({
-            "id": app["id"],
-            "candidate_id": app["candidate_id"],
-            "job_id": app["job_id"],
-            "candidate_name": candidate.get("name", "Candidate"),
-            "candidate_email": candidate.get("email", ""),
-            "job_title": job.get("title", "Job"),
-            "company": job.get("company", ""),
-            "atr_score": app.get("atr_score"),
-            "status": app.get("status")
+            "id": app.get("id"),
+            "candidate_id": app.get("candidate_id"),
+            "job_id": app.get("job_id"),
+
+            # Latest candidate information
+            "candidate_name": candidate.get(
+                "name",
+                "Candidate"
+            ),
+
+            "candidate_email": candidate.get(
+                "email",
+                ""
+            ),
+
+            "experience": candidate.get(
+                "experience",
+                0
+            ),
+
+            "skills": candidate.get(
+                "skills",
+                ""
+            ),
+
+            "summary": candidate.get(
+                "summary",
+                ""
+            ),
+
+            # Job information
+            "job_title": job.get(
+                "title",
+                "Job"
+            ),
+
+            "company": job.get(
+                "company",
+                ""
+            ),
+
+            "hr_email": job.get(
+                "hr_email",
+                ""
+            ),
+
+            "atr_score": app.get(
+                "atr_score"
+            ),
+
+            "status": app.get(
+                "status"
+            )
         })
 
     return eligible
-
 # ---------------------------------------
 # Get User Role
 # ---------------------------------------
