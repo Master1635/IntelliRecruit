@@ -373,7 +373,36 @@ def get_all_candidates():
     )
 
     return response.data
+def save_application(
+    candidate_id,
+    job_id,
+    atr,
+    status
+):
 
+    try:
+
+        response = (
+            supabase
+            .table("applications")
+            .insert({
+                "candidate_id": candidate_id,
+                "job_id": job_id,
+                "atr_score": atr,
+                "status": status
+            })
+            .execute()
+        )
+
+        return response
+
+    except Exception as e:
+
+        st.error(
+            f"Unable to submit application: {str(e)}"
+        )
+
+        return None
 
 def get_all_applications():
 
