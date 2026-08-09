@@ -1594,15 +1594,16 @@ def hr_dashboard():
                 if result:
 
                     email_sent = send_interview_invitation(
-                        selected_application["candidate_email"],
-                        selected_application["candidate_name"],
-                        selected_application["job_title"],
-                        selected_application["company"],
-                        selected_application["atr_score"],
-                        interview_date,
-                        interview_time,
-                        meeting_link,
-                        interview_round
+    		selected_application["candidate_email"],
+    selected_application["candidate_name"],
+    selected_application["job_title"],
+    selected_application["company"],
+    selected_application["atr_score"],
+    interview_date,
+    interview_time,
+    meeting_link,
+    interview_round
+)
                     )
 
                     if email_sent:
