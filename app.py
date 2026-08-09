@@ -258,6 +258,38 @@ def save_candidate(
     )
 
     return response.data[0]
+def update_candidate(
+    candidate_id,
+    name,
+    experience,
+    skills,
+    summary
+):
+
+    try:
+
+        response = (
+            supabase
+            .table("candidates")
+            .update({
+                "name": name,
+                "experience": experience,
+                "skills": skills,
+                "summary": summary
+            })
+            .eq("id", candidate_id)
+            .execute()
+        )
+
+        return response
+
+    except Exception as e:
+
+        st.error(
+            f"Unable to update profile: {str(e)}"
+        )
+
+        return None
 def save_application(
     candidate_id,
     job_id,
@@ -812,7 +844,10 @@ def candidate_dashboard():
 
             if submit:
 
-                if name.strip() == "" or skills.strip() == "":
+                if (
+                    name.strip() == ""
+                    or skills.strip() == ""
+                ):
 
                     st.warning(
                         "Please complete all mandatory fields."
@@ -821,17 +856,11 @@ def candidate_dashboard():
                 else:
 
                     save_candidate(
-
                         name,
-
                         st.session_state.user_email,
-
                         experience,
-
                         skills,
-
                         summary
-
                     )
 
                     st.success(
@@ -853,22 +882,144 @@ def candidate_dashboard():
     with col1:
 
         st.write(
-            f"**Name :** {candidate['name']}"
+            f"**Name :** {candidate.get('name', '')}"
         )
 
         st.write(
-            f"**Experience :** {candidate['experience']} Years"
+            f"**Experience :** "
+            f"{candidate.get('experience', 0)} Years"
         )
 
     with col2:
 
         st.write(
-            f"**Email :** {candidate['email']}"
+            f"**Email :** {candidate.get('email', '')}"
         )
 
         st.write(
-            f"**Skills :** {candidate['skills']}"
+            f"**Skills :** {candidate.get('skills', '')}"
         )
+
+    st.write(
+        f"**Professional Summary :** "
+        f"{candidate.get('summary', '')}"
+    )
+
+    # ---------------------------------------
+    # Update Profile
+    # ---------------------------------------
+
+    if st.button(
+        "✏️ Update Profile",
+        use_container_width=True
+    ):
+
+        st.session_state.edit_profile = True
+
+    if st.session_state.get(
+        "edit_profile",
+        False
+    ):
+
+        st.divider()
+
+        st.subheader(
+            "✏️ Update Your Profile"
+        )
+
+        with st.form(
+            "update_profile_form"
+        ):
+
+            updated_name = st.text_input(
+                "Full Name",
+                value=candidate.get(
+                    "name",
+                    ""
+                )
+            )
+
+            updated_experience = st.number_input(
+                "Years of Experience",
+                min_value=0.0,
+                max_value=40.0,
+                value=float(
+                    candidate.get(
+                        "experience",
+                        0
+                    )
+                ),
+                step=0.5
+            )
+
+            updated_skills = st.text_area(
+                "Skills (Comma Separated)",
+                value=candidate.get(
+                    "skills",
+                    ""
+                )
+            )
+
+            updated_summary = st.text_area(
+                "Professional Summary",
+                value=candidate.get(
+                    "summary",
+                    ""
+                )
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+
+                update_submit = st.form_submit_button(
+                    "💾 Update Profile",
+                    use_container_width=True
+                )
+
+            with col2:
+
+                cancel_update = st.form_submit_button(
+                    "❌ Cancel",
+                    use_container_width=True
+                )
+
+            if cancel_update:
+
+                st.session_state.edit_profile = False
+
+                st.rerun()
+
+            if update_submit:
+
+                if (
+                    updated_name.strip() == ""
+                    or updated_skills.strip() == ""
+                ):
+
+                    st.warning(
+                        "Please complete all mandatory fields."
+                    )
+
+                else:
+
+                    result = update_candidate(
+                        candidate["id"],
+                        updated_name.strip(),
+                        updated_experience,
+                        updated_skills.strip(),
+                        updated_summary.strip()
+                    )
+
+                    if result:
+
+                        st.session_state.edit_profile = False
+
+                        st.success(
+                            "✅ Profile updated successfully."
+                        )
+
+                        st.rerun()
 
     st.divider()
 
@@ -893,11 +1044,8 @@ def candidate_dashboard():
     for job in jobs:
 
         result = evaluate_candidate(
-
             candidate,
-
             job
-
         )
 
         results.append(result)
@@ -905,11 +1053,8 @@ def candidate_dashboard():
     result_df = pd.DataFrame(results)
 
     st.dataframe(
-
         result_df,
-
         use_container_width=True
-
     )
 
     st.divider()
@@ -925,25 +1070,20 @@ def candidate_dashboard():
     if eligible_jobs.empty:
 
         st.error(
-            "Currently you are not eligible for any available job."
+            "Currently you are not eligible "
+            "for any available job."
         )
 
         return
 
     selected_job = st.selectbox(
-
         "Select Eligible Job",
-
         eligible_jobs["Job Role"]
-
     )
 
     if st.button(
-
         "Apply Now",
-
         use_container_width=True
-
     ):
 
         selected = eligible_jobs[
@@ -951,25 +1091,19 @@ def candidate_dashboard():
         ].iloc[0]
 
         save_application(
-
             candidate["id"],
-
             selected["job_id"],
-
             selected["ATR Score (%)"],
-
             selected["Status"]
-
         )
 
+        # ---------------------------------------
         # Email to Candidate
+        # ---------------------------------------
 
         send_email(
-
             candidate["email"],
-
             "Application Submitted",
-
             f"""
 Hello {candidate['name']},
 
@@ -990,17 +1124,15 @@ Status :
 Regards,
 IntelliRecruit
 """
-
         )
 
+        # ---------------------------------------
         # Email to HR
+        # ---------------------------------------
 
         send_email(
-
             selected["HR Email"],
-
             "New Candidate Application",
-
             f"""
 Candidate Name :
 {candidate['name']}
@@ -1019,7 +1151,6 @@ Please review the application.
 Regards,
 IntelliRecruit
 """
-
         )
 
         st.success(
@@ -1027,7 +1158,6 @@ IntelliRecruit
         )
 
         st.balloons()
-
 # ===========================================
 # ADD NEW JOB OPENING
 # ===========================================
