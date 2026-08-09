@@ -1533,7 +1533,7 @@ def hr_dashboard():
         )
 
     st.divider()
-    # ---------------------------------------
+     # ---------------------------------------
     # Schedule Interview
     # ---------------------------------------
 
@@ -1552,6 +1552,10 @@ def hr_dashboard():
                 f"({app.get('company', '')})"
         )
 
+        # ---------------------------------------
+        # Interview Details
+        # ---------------------------------------
+
         interview_date = st.date_input(
             "Interview Date"
         )
@@ -1562,7 +1566,9 @@ def hr_dashboard():
 
         meeting_link = st.text_input(
             "Meeting Link",
-            placeholder="Enter Google Meet / Teams / Zoom link"
+            placeholder=(
+                "Enter Google Meet / Teams / Zoom link"
+            )
         )
 
         interview_round = st.selectbox(
@@ -1594,16 +1600,15 @@ def hr_dashboard():
                 if result:
 
                     email_sent = send_interview_invitation(
-    		selected_application["candidate_email"],
-    selected_application["candidate_name"],
-    selected_application["job_title"],
-    selected_application["company"],
-    selected_application["atr_score"],
-    interview_date,
-    interview_time,
-    meeting_link,
-    interview_round
-)
+                        selected_application["candidate_email"],
+                        selected_application["candidate_name"],
+                        selected_application["job_title"],
+                        selected_application["company"],
+                        selected_application["atr_score"],
+                        interview_date,
+                        interview_time,
+                        meeting_link,
+                        interview_round
                     )
 
                     if email_sent:
@@ -1618,7 +1623,8 @@ def hr_dashboard():
 
                         st.warning(
                             "⚠️ Interview scheduled, but "
-                            "the email could not be sent."
+                            "the invitation email could not "
+                            "be sent."
                         )
 
                     st.rerun()
